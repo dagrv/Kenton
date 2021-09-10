@@ -2,8 +2,8 @@
 
 - [x] Prepare Migrations
 - [x] Seed Initial Tags
-- [] Prepare Models
-- [] Prepare Factories
+- [x] Prepare Models
+- [x] Prepare Factories
 - [] Prepare Resources
 - [] Tags
 	- [] Routes
