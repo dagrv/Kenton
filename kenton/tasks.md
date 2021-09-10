@@ -4,11 +4,11 @@
 - [x] Seed Initial Tags
 - [x] Prepare Models
 - [x] Prepare Factories
-- [] Prepare Resources
-- [] Tags
-	- [] Routes
-	- [] Controller
-	- [] Tests
+- [x] Prepare Resources
+- [x] Tags
+	- [x] Routes
+	- [x] Controller
+	- [x] Tests
 
 - [] Offices
 	- [] List Offices
