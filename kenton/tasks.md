@@ -21,8 +21,8 @@
 - [] Create office
 
 - [x] Show only approved & visible records
-- [] Filter by hosts
-- [] Filter by users
+- [x] Filter by hosts
+- [x] Filter by users
 - [] Add tags, images, & user
 - [] Show previous reservations
 - [x] Pagination
