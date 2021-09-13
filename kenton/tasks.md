@@ -20,7 +20,7 @@
 - [] Show offices
 - [] Create office
 
-- [] Show only approved & visible records
+- [x] Show only approved & visible records
 - [] Filter by hosts
 - [] Filter by users
 - [] Add tags, images, & user
