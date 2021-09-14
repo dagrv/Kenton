@@ -24,8 +24,8 @@
 - [x] Filter by hosts
 - [x] Filter by users
 - [x] Add tags, images, & user
-- [] Show previous reservations
+- [x] Show previous reservations
 - [x] Pagination
-- [] Sort by distance (if location provided)
+- [x] Sort by distance (if location provided)
 - [] Host must be authenticated & Email must been verified
 - [] Add photos to offices endpoint

@@ -124,4 +124,36 @@ class OfficeControllerTest extends TestCase
         $response->assertOk();
         $this->assertEquals(1, $response->json('data')[0]['reservations_count']);
     }
+
+    /**
+     * @test
+     */
+    public function it_should_filter_by_distance_when_coordinates_provided() {
+
+        // Office a bit far from Lisbon, Portugal
+        $office1 = Office::factory()->create([
+            'lat' => '39.74051727562952',
+            'lng' => '-8.770375324893696',
+            'title' => 'Leiria, Portugal'
+        ]);
+    
+        // Office near to Lisbon, Portugal
+        $office2 = Office::factory()->create([
+            'lat' => '39.07753883078113',
+            'lng' => '-9.281266331143293',
+            'title' => 'Torres Vedras, Portugal'
+        ]);
+
+        $response = $this->get('/api/offices?lat=38.720661384644046&lng=-9.16044783453807');
+
+        $response->assertOk();
+        $this->assertEquals('Torres Vedras, Portugal', $response->json('data')[0]['title']);
+        $this->assertEquals('Leiria, Portugal', $response->json('data')[1]['title']);
+
+        $response = $this->get('/api/offices');
+        
+        $response->assertOk();
+        $this->assertEquals('Leiria, Portugal', $response->json('data')[0]['title']);
+        $this->assertEquals('Torres Vedras, Portugal', $response->json('data')[1]['title']);
+    }
 }
