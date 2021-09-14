@@ -23,7 +23,7 @@
 - [x] Show only approved & visible records
 - [x] Filter by hosts
 - [x] Filter by users
-- [] Add tags, images, & user
+- [x] Add tags, images, & user
 - [] Show previous reservations
 - [x] Pagination
 - [] Sort by distance (if location provided)
