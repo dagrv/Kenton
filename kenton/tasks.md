@@ -35,14 +35,28 @@
 - [] Order by distance but don't include the distance
 - [] Configure resources
 
+#### Filtering
+- [] User can only list their own reservation(s) on their office
+- [] Allow filtering by office_id
+- [] Allow filtering by user_id
+- [] Allow filtering date range
+- [] Allow filtering by status
+
+#### Delete
+- [] Cannot delete an office that has a reservation
+- [] Cannot delete an office if it isn't their own
+- [] User must be authenticated & email verified to delete 
+
 - [] Validation
 - [] Attaching photos to a specific office
 - [] Choose a photo to be the feautured photo of the office
 - [] Use locks to make the process atomic 
 
+#### Reminders
 - [] User & host will get an email when a reservation is confirmed
 - [] User & host will get an email on reservation day (reminder)
 
+#### Cancellation
 - [] User must be authenticated & email should be verified to cancel an reservation
 - [] User can only cancel their own reservation(s)
 - [] User can only cancel an active reservation that has a start_date in the future. 
