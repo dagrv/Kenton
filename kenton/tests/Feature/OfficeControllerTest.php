@@ -18,17 +18,16 @@ class OfficeControllerTest extends TestCase
     /**
      * @test
      */
-    public function it_should_list_all_offices_paginated()
+    public function itListsAllOfficesInPaginatedWay()
     {
-        Office::factory(3)->create();
+        Office::factory(30)->create();
 
         $response = $this->get('/api/offices');
 
-        $response->assertOk(200);
-        $response->assertJsonCount(3, 'data');
-        $this->assertNotNull($response->json('data')[0]['id']);
-        $this->assertNotNull($response->json('meta'));
-        $this->assertNotNull($response->json('links'));
+        $response->assertOk()
+            ->assertJsonStructure(['data', 'meta', 'links'])
+            ->assertJsonCount(20, 'data')
+            ->assertJsonStructure(['data' => ['*' => ['id', 'title']]]);
     }
 
     /**
@@ -42,14 +41,14 @@ class OfficeControllerTest extends TestCase
         Office::factory()->create(['approval_status' => Office::APPROVAL_PENDING]);
 
         $response = $this->get('/api/offices');
-        $response->assertOk(200);
-        $response->assertJsonCount(3, 'data');
+        $response->assertOk()
+            ->assertJsonCount(3, 'data');
     }
 
     /**
      * @test
      */
-    public function it_should_filter_by_host_id()
+    public function it_should_filter_by_user_id()
     {
         Office::factory(3)->create();
 
@@ -57,17 +56,18 @@ class OfficeControllerTest extends TestCase
         $office = Office::factory()->for($host)->create();
 
         $response = $this->get(
-            '/api/offices?host_id='.$host->id
+            '/api/offices?user_id='.$host->id
         );
-        $response->assertOk(200);
-        $response->assertJsonCount(1, 'data');
-        $this->assertEquals($office->id, $response->json('data')[0]['id']);
+        
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $office->id);
     }
 
     /**
      * @test
      */
-    public function it_should_filter_by_user_id()
+    public function it_should_filter_by_visitor_id()
     {
         Office::factory(3)->create();
 
@@ -78,12 +78,12 @@ class OfficeControllerTest extends TestCase
         Reservation::factory()->for($office)->for($user)->create();
 
         $response = $this->get(
-            '/api/offices?user_id='.$user->id
+            '/api/offices?visitor_id='.$user->id
         );
 
-        $response->assertOk(200);
-        $response->assertJsonCount(1, 'data');
-        $this->assertEquals($office->id, $response->json('data')[0]['id']);
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $office->id);
     }
 
     /**
@@ -100,13 +100,10 @@ class OfficeControllerTest extends TestCase
 
         $response = $this->get('/api/offices');
         
-        $response->assertOk();
-
-        $this->assertIsArray($response->json('data')[0]['tags']);
-        $this->assertCount(1, $response->json('data')[0]['tags']);
-        $this->assertIsArray($response->json('data')[0]['images']);
-        $this->assertCount(1, $response->json('data')[0]['images']);
-        $this->assertEquals($user->id, $response->json('data')[0]['user']['id']);
+        $response->assertOk()
+            ->assertJsonCount(1, 'data.0.tags')
+            ->assertJsonCount(1, 'data.0.images')
+            ->assertJsonPath('data.0.user.id', $user->id);
     }
 
     /**
@@ -121,8 +118,8 @@ class OfficeControllerTest extends TestCase
 
         $response = $this->get('/api/offices');
         
-        $response->assertOk();
-        $this->assertEquals(1, $response->json('data')[0]['reservations_count']);
+        $response->assertOk()
+            ->assertJsonPath('data.0.reservations_count', 1);
     }
 
     /**
@@ -146,15 +143,15 @@ class OfficeControllerTest extends TestCase
 
         $response = $this->get('/api/offices?lat=38.720661384644046&lng=-9.16044783453807');
 
-        $response->assertOk();
-        $this->assertEquals('Torres Vedras, Portugal', $response->json('data')[0]['title']);
-        $this->assertEquals('Leiria, Portugal', $response->json('data')[1]['title']);
+        $response->assertOk()
+            ->assertJsonPath('data.0.title', 'Torres Vedras, Portugal')
+            ->assertJsonPath('data.1.title', 'Leiria, Portugal');
 
         $response = $this->get('/api/offices');
         
-        $response->assertOk();
-        $this->assertEquals('Leiria, Portugal', $response->json('data')[0]['title']);
-        $this->assertEquals('Torres Vedras, Portugal', $response->json('data')[1]['title']);
+        $response->assertOk()
+            ->assertJsonPath('data.0.title', 'Leiria, Portugal')
+            ->assertJsonPath('data.1.title', 'Torres Vedras, Portugal');
     }
 
     /**
@@ -173,11 +170,59 @@ class OfficeControllerTest extends TestCase
 
         $response = $this->get('/api/offices/'.$office->id);
 
-        $this->assertEquals(1, $response->json ('data') ['reservations_count']);
-        $this->assertIsArray($response->json('data')['tags']);
-        $this->assertCount(1, $response->json('data')['tags']);
-        $this->assertIsArray($response->json('data')['images']);
-        $this->assertCount(1, $response->json('data')['images']);
-        $this->assertEquals($user->id, $response->json('data')['user']['id']);
+        $response->assertOk()
+            ->assertJsonPath('data.reservations_count', 1)
+            ->assertJsonCount(1, 'data.tags')
+            ->assertJsonCount(1, 'data.images')
+            ->assertJsonPath('data.user.id', $user->id);
+    }
+
+    /**
+     * @test
+     */
+    public function it_creates_an_office() {
+        $user = User::factory()->createQuietly();
+        $tag = Tag::factory()->create();
+        $tag2 = Tag::factory()->create();
+
+        $this->actingAs($user);
+
+        $response = $this->postJson('/api/offices', [
+            'title' => 'Office in Paris',
+            'description' => 'Nice office next to the Eiffel Tower and 10 minutes away from Montmartre',
+            'lat' => '48.88665937327046',
+            'lng' => '2.3396158411905614',
+            'address_line1' => '22 rue Tholozé 75018 Paris',
+            'price_per_day' => 38_000,
+            'monthly_discount' => 10,
+            'tags' => [
+                $tag->id,
+                $tag2->id
+            ]
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.title', 'Office in Paris')
+            ->assertJsonPath('data.approval_status', Office::APPROVAL_PENDING)
+            ->assertJsonPath('data.user.id', $user->id)
+            ->assertJsonCount(2, 'data.tags');
+
+        $this->assertDatabaseHas('offices', [
+            'title' => 'Office in Paris'
+        ]);
+    }
+
+    /**
+     * @test
+     */
+    public function it_should_not_create_if_no_scopes_provided() {
+        $user = User::factory()->createQuietly();
+        $token = $user->createToken('test', []);
+
+        $response = $this->postJson('/api/offices', [], [
+            'Authorization' => 'Bearer '.$token->plainTextToken
+        ]);
+
+        $response->assertStatus(403);
     }
 }

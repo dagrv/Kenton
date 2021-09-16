@@ -28,12 +28,15 @@
 - [x] Pagination
 - [x] Sort by distance (if location provided)
 
-- [] Host must be authenticated & Email must been verified
+#### Offices Endpoint
+
+- [x] User must be authenticated & Email must been verified
 - [] Add photos to offices endpoint
-- [] Change user_id filter to visitor_id && host_id to user_id
-- [] Switch to using Custom Polymorphic Types
-- [] Order by distance but don't include the distance
-- [] Configure resources
+- [x] Change user_id filter to visitor_id && host_id to user_id
+- [x] Switch to using Custom Polymorphic Types
+- [x] Order by distance but don't include the distance
+- [x] Configure resources
+- [x] Token authorization to allow <b>office.create</b>
 
 #### Filtering
 - [] User can only list their own reservation(s) on their office
