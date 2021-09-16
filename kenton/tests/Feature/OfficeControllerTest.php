@@ -18,7 +18,7 @@ class OfficeControllerTest extends TestCase
     /**
      * @test
      */
-    public function itListsAllOfficesInPaginatedWay()
+    public function it_should_list_all_offices_paginated()
     {
         Office::factory(30)->create();
 
@@ -180,7 +180,7 @@ class OfficeControllerTest extends TestCase
     /**
      * @test
      */
-    public function it_creates_an_office() {
+    public function it_should_create_an_office() {
         $user = User::factory()->createQuietly();
         $tag = Tag::factory()->create();
         $tag2 = Tag::factory()->create();

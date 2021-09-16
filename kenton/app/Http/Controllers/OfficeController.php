@@ -49,7 +49,7 @@ class OfficeController extends Controller
     public function create(): JsonResource {
         
         if (! auth()->user()->tokenCan('office.create')) {
-            abort(403);
+            abort(Response::HTTP_FORBIDDEN);
         }
         
         $attributes = validator(request()->all(), 
