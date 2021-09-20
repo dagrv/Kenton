@@ -12,8 +12,8 @@
 - [] Read Offices
 - [] Create Office
 - [] Add photos to offices endpoint
-- [] Mark as `pending` when critical attributes are updated and notify the admin
-- [] Notify admin on new office creation
+- [x] Notify admin on new office creation
+- [x] Mark as `pending` when critical attributes are updated and notify the admin
 - [x] Can only update their own offices
 - [x] User must be authenticated & Email must been verified
 - [x] Change user_id filter to visitor_id && host_id to user_id
@@ -41,6 +41,12 @@
 #### Reminders
 - [] User & host will get an email when a reservation is confirmed
 - [] User & host will get an email on reservation day (reminder)
+
+#### Deletion
+- [x] Must be auth' & email verified
+- [x] Token must allow office.delete
+- [x] Can only delete their own offices
+- [x] Cant delete an office with an reservation on it
 
 #### Cancellation
 - [] User must be authenticated & email should be verified to cancel an reservation

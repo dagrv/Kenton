@@ -8,9 +8,11 @@ use App\Models\User;
 use App\Models\Image;
 use App\Models\Office;
 use App\Models\Reservation;
+use App\Notifications\OfficePendingApproval;
 use Illuminate\Http\Response;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 
 class OfficeControllerTest extends TestCase
 {
@@ -173,6 +175,10 @@ class OfficeControllerTest extends TestCase
      * @test
      */
     public function it_should_create_an_office() {
+        Notification::fake();
+        
+        $admin = User::factory()->create(['name' => 'Dj']);
+        
         $user = User::factory()->create();
         $tags = Tag::factory(2)->create();
 
@@ -190,6 +196,8 @@ class OfficeControllerTest extends TestCase
         $this->assertDatabaseHas('offices', [
             'id' => $response->json('data.id')
         ]);
+
+        Notification::assertSentTo($admin, OfficePendingApproval::class);
     }
 
     /**
@@ -246,5 +254,69 @@ class OfficeControllerTest extends TestCase
         ]);
 
         $response->assertStatus(Response::HTTP_FORBIDDEN);
+    }
+
+    /**
+     * @test
+     */
+    public function it_should_mark_the_office_as_pending_if_changed() {
+        $admin = User::factory()->create(['name' => 'Dj']);
+        
+        Notification::fake();
+
+        $user = User::factory()->create();
+        $office = Office::factory()->for($user)->create();
+
+        $this->actingAs($user);
+
+        $response = $this->putJson('/api/offices/'.$office->id, [
+            'lat' => 40.74051727562952
+        ]);
+
+        $response->assertOk();
+
+        Notification::assertSentTo($admin, OfficePendingApproval::class);
+
+        $this->assertDatabaseHas('offices', [
+            'id' => $office->id,
+            'approval_status' => Office::APPROVAL_PENDING
+        ]);
+    }
+
+    /**
+     * @test
+     */
+    public function it_should_delete_offices() {
+        $user = User::factory()->create();
+        $office = Office::factory()->for($user)->create();
+        
+        $this->actingAs($user);
+
+        $response = $this->deleteJson('/api/offices/'.$office->id);
+
+        $response->assertOk();
+
+        $this->assertSoftDeleted($office);
+    }
+    
+    /**
+     * @test
+     */
+    public function it_should_not_delete_offices_with_reservation() {
+        $user = User::factory()->create();
+        $office = Office::factory()->for($user)->create();
+
+        Reservation::factory(3)->for($office)->create();
+        
+        $this->actingAs($user);
+
+        $response = $this->deleteJson('/api/offices/'.$office->id);
+
+        $response->assertStatus(422);
+
+        $this->assertDatabaseHas('offices', [
+            'id' => $office->id,
+            'deleted_at' => null
+        ]);
     }
 }

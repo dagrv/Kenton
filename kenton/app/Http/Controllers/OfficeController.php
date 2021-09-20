@@ -10,11 +10,15 @@ use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use App\Http\Resources\OfficeResource;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use App\Models\Validators\OfficeValidator;
+use App\Notifications\OfficePendingApproval;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Validation\ValidationException;
 
 class OfficeController extends Controller {
     public function index(): AnonymousResourceCollection {
@@ -72,6 +76,8 @@ class OfficeController extends Controller {
             return $office;
         });
 
+        Notification::send(User::firstWhere('name', 'Dj'), new OfficePendingApproval($office));
+
         return OfficeResource::make(
             $office->load(['images', 'tags', 'user'])
         );
@@ -90,6 +96,11 @@ class OfficeController extends Controller {
 
         $office->fill(Arr::except($attributes, ['tags']));
 
+        // isDirty can also be referred to as: isChanged
+        if ($requiresReview = $office->isDirty(['lat', 'lng', 'price_per_day'])) {
+            $office->fill(['approval_status' => Office::APPROVAL_PENDING]);
+        }
+
         DB::transaction(function () use ($office, $attributes) {
             $office->save();
             
@@ -98,8 +109,27 @@ class OfficeController extends Controller {
             }
         });
 
+        if ($requiresReview) {
+            Notification::send(User::firstWhere('name', 'Dj'), new OfficePendingApproval($office));
+        }
+
         return OfficeResource::make(
             $office->load(['images', 'tags', 'user'])
         );
+    }
+
+    public function delete(Office $office) {
+        abort_unless(auth()->user()->tokenCan('office.delete'),
+            Response::HTTP_FORBIDDEN
+        );
+
+        $this->authorize('delete', $office);
+
+        throw_if (
+            $office->reservations()->where('status', Reservation::STATUS_ACTIVE)->exists(),
+            ValidationException::withMessages(['office' => 'You cannot delete this office'])
+        );
+
+        $office->delete();
     }
 }
