@@ -2,27 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\OfficeResource;
 use App\Models\Office;
 use App\Models\Reservation;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Http\Response;
 use Illuminate\Support\Arr;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
+use App\Http\Resources\OfficeResource;
+use Illuminate\Database\Eloquent\Builder;
+use App\Models\Validators\OfficeValidator;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
-class OfficeController extends Controller
-{
+class OfficeController extends Controller {
     public function index(): AnonymousResourceCollection {
         $offices = Office::query()
             ->where('approval_status', Office::APPROVAL_APPROVED)
             ->where('hidden', false)
             ->when(request('user_id'), fn ($builder) => $builder->whereUserId(request('user_id')))
             ->when(request('visitor_id'),
-                fn (Builder $builder) 
+                fn (Builder $builder)
                     => $builder->whereRelation('reservations', 'user_id', '=', request('visitor_id'))
             )
             ->when(
@@ -33,7 +34,7 @@ class OfficeController extends Controller
             ->with(['images', 'tags', 'user'])
             ->withCount(['reservations' => fn ($builder) => $builder->where('status', Reservation::STATUS_ACTIVE)])
             ->paginate(20);
-        
+
         return OfficeResource::collection(
             $offices
         );
@@ -42,40 +43,63 @@ class OfficeController extends Controller
     public function show(Office $office) {
         $office->loadCount(['reservations' => fn ($builder) => $builder->where('status', Reservation::STATUS_ACTIVE)])
             ->load(['images', 'tags', 'user']);
-
         return OfficeResource::make($office);
     }
 
+    // CREATE
     public function create(): JsonResource {
-        
-        if (! auth()->user()->tokenCan('office.create')) {
-            abort(Response::HTTP_FORBIDDEN);
-        }
-        
-        $attributes = validator(request()->all(), 
-            [
-                'title' => ['required', 'string'],
-                'description' => ['required', 'string'],
-                'lat' => ['required', 'numeric'],
-                'lng' => ['required', 'numeric'],
-                'address_line1' => ['required', 'string'],
-                'hidden' => ['bool'],
-                'price_per_day' => ['required', 'integer', 'min:100'],
-                'monthly_discount' => ['integer', 'min:0', 'max:90'],
-
-                'tags' => ['array'],
-                'tags.*' => ['integer', Rule::exists('tags', 'id')]
-            ]
-        )->validate();
-
-        $attributes['approval_status'] = Office::APPROVAL_PENDING;
-
-        $office = auth()->user()->offices()->create(
-            Arr::except($attributes, ['tags'])
+        abort_unless(auth()->user()->tokenCan('office.create'),
+            Response::HTTP_FORBIDDEN
         );
 
-        $office->tags()->sync($attributes['tags']);
+        $attributes = (new OfficeValidator())->validate(
+            $office = new Office(),
+            request()->all()
+        );
 
-        return OfficeResource::make($office);
+        $attributes['approval_status'] = Office::APPROVAL_PENDING;
+        $attributes['user_id'] = auth()->id();
+
+        $office = DB::transaction(function () use ($office, $attributes) {
+            $office->fill(
+                Arr::except($attributes, ['tags'])
+            )->save();
+
+            if (isset($attributes['tags'])) {
+                $office->tags()->attach($attributes['tags']);
+            }
+
+            return $office;
+        });
+
+        return OfficeResource::make(
+            $office->load(['images', 'tags', 'user'])
+        );
+    }
+
+    // UPDATE
+    public function update(Office $office): JsonResource
+    {
+        abort_unless(auth()->user()->tokenCan('office.update'),
+            Response::HTTP_FORBIDDEN
+        );
+
+        $this->authorize('update', $office);
+
+        $attributes = (new OfficeValidator())->validate($office, request()->all());
+
+        $office->fill(Arr::except($attributes, ['tags']));
+
+        DB::transaction(function () use ($office, $attributes) {
+            $office->save();
+            
+            if (isset($attributes['tags'])) {
+                $office->tags()->sync($attributes['tags']);
+            }
+        });
+
+        return OfficeResource::make(
+            $office->load(['images', 'tags', 'user'])
+        );
     }
 }
