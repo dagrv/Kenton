@@ -3,12 +3,13 @@
 _23 Sept 2021_
 
 #### Photos
-- [] Attach photo to an office and make it possible to be a cover. 
-- [] Only one photo is required and can be marked as `featured photo`
+
 - [] Delete a photo
 
 Done:
-- [x] Find an admin by adding attribute `is_admin` to users table.
+- [x] Only one photo is required and can be marked as `featured photo`
+- [x] Attach photo to an office and make it possible to be a cover
+- [x] Find an admin by adding attribute `is_admin` to users table
 - [x] Return hidden and non-approved offices when filtering by `user_id` + User informations (to be easily tracke user and listing
 -----------------------------------------------------------------------------------------
 
