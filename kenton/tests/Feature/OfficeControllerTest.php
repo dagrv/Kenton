@@ -42,9 +42,28 @@ class OfficeControllerTest extends TestCase
         Office::factory()->create(['approval_status' => Office::APPROVAL_PENDING]);
 
         $response = $this->get('/api/offices');
-        $response->assertOk()
-            ->assertJsonCount(3, 'data');
+        $response->assertOk()->assertJsonCount(3, 'data');
     }
+
+
+    /**
+     * @test
+     */
+    public function it_should_list_all_offices_including_hidden_and_non_approved_for_current_logged_in_user() {
+        $user = User::factory()->create();
+
+        Office::factory(3)->for($user)->create();
+
+        Office::factory()->hidden()->for($user)->create();
+        Office::factory()->pending()->for($user)->create();
+
+        $this->actingAs($user);
+
+        $response = $this->get('/api/offices?user_id='.$user->id);
+        $response->assertOk()
+            ->assertJsonCount(5, 'data');
+    }
+
 
     /**
      * @test
@@ -59,9 +78,7 @@ class OfficeControllerTest extends TestCase
             '/api/offices?user_id='.$host->id
         );
 
-        $response->assertOk()
-            ->assertJsonCount(1, 'data')
-            ->assertJsonPath('data.0.id', $office->id);
+        $response->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $office->id);
     }
 
     /**
@@ -80,9 +97,7 @@ class OfficeControllerTest extends TestCase
             '/api/offices?visitor_id='.$user->id
         );
 
-        $response->assertOk()
-            ->assertJsonCount(1, 'data')
-            ->assertJsonPath('data.0.id', $office->id);
+        $response->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $office->id);
     }
 
     /**
@@ -115,8 +130,7 @@ class OfficeControllerTest extends TestCase
 
         $response = $this->get('/api/offices');
 
-        $response->assertOk()
-            ->assertJsonPath('data.0.reservations_count', 1);
+        $response->assertOk()->assertJsonPath('data.0.reservations_count', 1);
     }
 
     /**
