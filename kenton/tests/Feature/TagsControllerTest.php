@@ -11,7 +11,7 @@ class TagsControllerTest extends TestCase
     /**
      * @test
      */
-    public function it_lists_tags() {
+    public function it_should_list_tags() {
         $response = $this->get('/api/tags');
 
         $response->assertStatus(200);

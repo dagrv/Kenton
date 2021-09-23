@@ -2,8 +2,6 @@
 
 _23 Sept 2021_
 
-- [] Return hidden and non-approved offices when filtering by `user_id` + User informations (to be easily tracke user and listing
-
 #### Photos
 - [] Attach photo to an office and make it possible to be a cover. 
 - [] Only one photo is required and can be marked as `featured photo`
@@ -11,6 +9,7 @@ _23 Sept 2021_
 
 Done:
 - [x] Find an admin by adding attribute `is_admin` to users table.
+- [x] Return hidden and non-approved offices when filtering by `user_id` + User informations (to be easily tracke user and listing
 -----------------------------------------------------------------------------------------
 
 - [] Filter offices returned
