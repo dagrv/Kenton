@@ -177,7 +177,7 @@ class OfficeControllerTest extends TestCase
     public function it_should_create_an_office() {
         Notification::fake();
         
-        $admin = User::factory()->create(['name' => 'Dj']);
+        $admin = User::factory()->create(['is_admin' => true]);
         
         $user = User::factory()->create();
         $tags = Tag::factory(2)->create();
@@ -260,7 +260,7 @@ class OfficeControllerTest extends TestCase
      * @test
      */
     public function it_should_mark_the_office_as_pending_if_changed() {
-        $admin = User::factory()->create(['name' => 'Dj']);
+        $admin = User::factory()->create(['is_admin' => true]);
         
         Notification::fake();
 
@@ -293,7 +293,6 @@ class OfficeControllerTest extends TestCase
         $this->actingAs($user);
 
         $response = $this->deleteJson('/api/offices/'.$office->id);
-
         $response->assertOk();
 
         $this->assertSoftDeleted($office);
@@ -302,7 +301,7 @@ class OfficeControllerTest extends TestCase
     /**
      * @test
      */
-    public function it_should_not_delete_offices_with_reservation() {
+    public function it_should_not_delete_offices_that_has_reservations() {
         $user = User::factory()->create();
         $office = Office::factory()->for($user)->create();
 
@@ -311,8 +310,7 @@ class OfficeControllerTest extends TestCase
         $this->actingAs($user);
 
         $response = $this->deleteJson('/api/offices/'.$office->id);
-
-        $response->assertStatus(422);
+        $response->assertUnprocessable();
 
         $this->assertDatabaseHas('offices', [
             'id' => $office->id,

@@ -1,11 +1,25 @@
 # Left To do
-- [x] Offices approval status must be pending, approved, never rejected.
-- [x] Store `Office` in DB Transaction
+
+_23 Sept 2021_
+
+- [] Return hidden and non-approved offices when filtering by `user_id` + User informations (to be easily tracke user and listing
+
+#### Photos
+- [] Attach photo to an office and make it possible to be a cover. 
+- [] Only one photo is required and can be marked as `featured photo`
+- [] Delete a photo
+
+Done:
+- [x] Find an admin by adding attribute `is_admin` to users table.
+-----------------------------------------------------------------------------------------
+
 - [] Filter offices returned
-- [x] Office Update
 - [] Pagination offices
 - [] Create office
 - [] Show offices
+- [x] Offices approval status must be pending, approved, never rejected.
+- [x] Store `Office` in DB Transaction
+- [x] Office Update
 
 #### Offices Endpoint
 - [] List Offices
