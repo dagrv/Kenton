@@ -69,6 +69,28 @@ class OfficeImageControllerTest extends TestCase {
     /**
      * @test
      */
+    public function it_should_not_delete_an_image_belonging_to_another_resource() {
+        Storage::disk('public')->put('office_image.jpg', 'empty');
+        
+        $user = User::factory()->create();
+        $office = Office::factory()->for($user)->create();
+        $office2 = Office::factory()->for($user)->create();
+
+        $image = $office2->images()->create([
+            'path' => 'office_image.jpg'
+        ]);
+
+        $this->actingAs($user);
+
+        $response = $this->deleteJson("/api/offices/{$office->id}/images/{$image->id}");
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors(['image' => 'Cannot delete this image']);
+    }
+
+
+    /**
+     * @test
+     */
     public function it_should_not_delete_only_image_left() {
         Storage::disk('public')->put('office_image.jpg', 'empty');
         
