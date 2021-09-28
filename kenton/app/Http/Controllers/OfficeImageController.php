@@ -49,6 +49,7 @@ class OfficeImageController extends Controller {
         );
 
         Storage::disk('public')->delete($image->path);
+        
         $image->delete();
     }
 }

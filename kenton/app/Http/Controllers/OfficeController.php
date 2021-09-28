@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Office;
 use App\Models\Reservation;
 use Illuminate\Support\Arr;
@@ -10,7 +11,7 @@ use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use App\Http\Resources\OfficeResource;
-use App\Models\User;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Builder;
 use App\Models\Validators\OfficeValidator;
 use App\Notifications\OfficePendingApproval;
@@ -61,7 +62,6 @@ class OfficeController extends Controller {
             $office = new Office(),
             request()->all()
         );
-
         $attributes['approval_status'] = Office::APPROVAL_PENDING;
         $attributes['user_id'] = auth()->id();
 
@@ -84,9 +84,9 @@ class OfficeController extends Controller {
         );
     }
 
+
     // UPDATE
-    public function update(Office $office): JsonResource
-    {
+    public function update(Office $office): JsonResource {
         abort_unless(auth()->user()->tokenCan('office.update'),
             Response::HTTP_FORBIDDEN
         );
@@ -119,6 +119,7 @@ class OfficeController extends Controller {
         );
     }
 
+
     public function delete(Office $office) {
         abort_unless(auth()->user()->tokenCan('office.delete'),
             Response::HTTP_FORBIDDEN
@@ -130,6 +131,12 @@ class OfficeController extends Controller {
             $office->reservations()->where('status', Reservation::STATUS_ACTIVE)->exists(),
             ValidationException::withMessages(['office' => 'You cannot delete this office'])
         );
+
+        $office->images()->each(function($image) {
+            Storage::disk('public')->delete($image->path);
+        
+            $image->delete();
+        });
 
         $office->delete();
     }

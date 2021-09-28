@@ -9,6 +9,7 @@ use App\Models\Image;
 use App\Models\Office;
 use App\Models\Reservation;
 use App\Notifications\OfficePendingApproval;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Response;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -344,8 +345,14 @@ class OfficeControllerTest extends TestCase
      * @test
      */
     public function it_should_delete_offices() {
+        Storage::disk('public')->put('office_image.jpg', 'empty');
+        
         $user = User::factory()->create();
         $office = Office::factory()->for($user)->create();
+
+        $image = $office->images()->create([
+            'path' => 'office_image.jpg'
+        ]);
         
         $this->actingAs($user);
 
@@ -353,6 +360,8 @@ class OfficeControllerTest extends TestCase
         $response->assertOk();
 
         $this->assertSoftDeleted($office);
+
+        Storage::disk('public')->assertMissing('office_image.jpg');
     }
     
     /**

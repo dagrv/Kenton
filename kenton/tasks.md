@@ -1,10 +1,16 @@
 # Left To do
 
+_28 Sept 2021_
+- [x] Delete all images when deleting an office
+- [] Default disk should store public images, make switching process easier (in the future)
+- [] Switch to Sanctum Guard
+- [] Use keyed implicit binding
+
+Done:
+
+
+-----------------------------------------------------------------------------------------
 _23 Sept 2021_
-
-#### Photos
-
-
 
 Done:
 - [x] Only one photo is required and can be marked as `featured photo`
