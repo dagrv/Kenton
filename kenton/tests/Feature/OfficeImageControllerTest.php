@@ -18,7 +18,7 @@ class OfficeImageControllerTest extends TestCase {
      * @test
      */
     public function it_should_upload_an_image_and_store_it() {
-        Storage::fake('public');
+        Storage::fake();
 
         $user = User::factory()->create();
         $office = Office::factory()->for($user)->create();
@@ -31,7 +31,7 @@ class OfficeImageControllerTest extends TestCase {
 
         $response->assertCreated();
         
-        Storage::disk('public')->assertExists(
+        Storage::assertExists(
             $response->json('data.path')
         );
     }
@@ -41,7 +41,7 @@ class OfficeImageControllerTest extends TestCase {
      * @test
      */
     public function it_should_delete_an_image() {
-        Storage::disk('public')->put('office_image.jpg', 'empty');
+        Storage::put('office_image.jpg', 'empty');
         
         $user = User::factory()->create();
         $office = Office::factory()->for($user)->create();
@@ -60,9 +60,8 @@ class OfficeImageControllerTest extends TestCase {
 
         $response->assertOk();
 
-        //assertModelMissing leads to an error (need to upgrade laravel)
-
-        Storage::disk('public')->assertMissing('office_image.jpg');
+        //TODO: assertModelMissing leads to an error (need to upgrade laravel)
+        Storage::assertMissing('office_image.jpg');
     }
 
 
@@ -83,8 +82,8 @@ class OfficeImageControllerTest extends TestCase {
         $this->actingAs($user);
 
         $response = $this->deleteJson("/api/offices/{$office->id}/images/{$image->id}");
-        $response->assertUnprocessable();
-        $response->assertJsonValidationErrors(['image' => 'Cannot delete this image']);
+        
+        $response->assertNotFound();
     }
 
 

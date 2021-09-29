@@ -1,14 +1,13 @@
 # Left To do
 
 _28 Sept 2021_
-- [x] Delete all images when deleting an office
-- [] Default disk should store public images, make switching process easier (in the future)
-- [] Switch to Sanctum Guard
-- [] Use keyed implicit binding
+
+- [] Switch to Sanctum Guard => More research needed
 
 Done:
-
-
+- [x] Delete all images when deleting an office
+- [x] Default disk should store public images, make switching process easier (in the future)
+- [x] Use keyed implicit binding
 -----------------------------------------------------------------------------------------
 _23 Sept 2021_
 
@@ -91,3 +90,6 @@ Done:
 - [x] Show previous reservations
 - [x] Pagination
 - [x] Sort by distance (if location provided)
+
+
+*Dedicated to my dear friend Adam Kenton (RIP 1990-2019)*

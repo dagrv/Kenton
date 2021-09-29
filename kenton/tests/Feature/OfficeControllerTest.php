@@ -15,8 +15,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 
-class OfficeControllerTest extends TestCase
-{
+class OfficeControllerTest extends TestCase {
     use RefreshDatabase;
 
     /**
@@ -345,7 +344,7 @@ class OfficeControllerTest extends TestCase
      * @test
      */
     public function it_should_delete_offices() {
-        Storage::disk('public')->put('office_image.jpg', 'empty');
+        Storage::put('office_image.jpg', 'empty');
         
         $user = User::factory()->create();
         $office = Office::factory()->for($user)->create();
@@ -361,7 +360,7 @@ class OfficeControllerTest extends TestCase
 
         $this->assertSoftDeleted($office);
 
-        Storage::disk('public')->assertMissing('office_image.jpg');
+        Storage::assertMissing('office_image.jpg');
     }
     
     /**
