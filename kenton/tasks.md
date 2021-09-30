@@ -1,11 +1,10 @@
 # Left To do
 
 _30 Sept 2021_
-
-- [] Update Laravel to use assertNotSoftDeleted & assertModelMissing
-- [] Update Laravel to use RefreshDBLazily (in tests)
 Done:
 - [x] Switch to Sanctum Guard
+- [x] Update Laravel to use assertNotSoftDeleted & assertModelMissing
+- [x] Update Laravel to use LazilyRefreshDatabase (in tests)
 -----------------------------------------------------------------------------------------
 _28 Sept 2021_
 Done:
