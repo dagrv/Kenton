@@ -8,12 +8,13 @@ use App\Models\User;
 use App\Models\Image;
 use App\Models\Office;
 use App\Models\Reservation;
-use App\Notifications\OfficePendingApproval;
-use Illuminate\Support\Facades\Storage;
+use Laravel\Sanctum\Sanctum;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Storage;
+use App\Notifications\OfficePendingApproval;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class OfficeControllerTest extends TestCase {
     use RefreshDatabase;
@@ -21,7 +22,7 @@ class OfficeControllerTest extends TestCase {
     /**
      * @test
      */
-    public function it_should_list_all_offices_paginated() {
+    public function it_list_all_offices_paginated() {
         Office::factory(30)->create();
 
         $response = $this->get('/api/offices');
@@ -35,7 +36,7 @@ class OfficeControllerTest extends TestCase {
     /**
      * @test
      */
-    public function it_should_only_list_offices_that_are_not_hidden_and_approved() {
+    public function it_only_list_offices_that_are_not_hidden_and_approved() {
         Office::factory(3)->create();
 
         Office::factory()->create(['hidden' => true]);
@@ -49,7 +50,7 @@ class OfficeControllerTest extends TestCase {
     /**
      * @test
      */
-    public function it_should_list_all_offices_including_hidden_and_non_approved_for_current_logged_in_user() {
+    public function it_list_offices_including_hidden_and_non_approved_if_filtering_for_current_loggedin_user() {
         $user = User::factory()->create();
 
         Office::factory(3)->for($user)->create();
@@ -67,7 +68,7 @@ class OfficeControllerTest extends TestCase {
     /**
      * @test
      */
-    public function it_should_filter_by_user_id() {
+    public function it_filters_by_user_id() {
         Office::factory(3)->create();
 
         $host = User::factory()->create();
@@ -83,7 +84,7 @@ class OfficeControllerTest extends TestCase {
     /**
      * @test
      */
-    public function it_should_filter_by_visitor_id() {
+    public function it_filters_by_visitor_id() {
         Office::factory(3)->create();
 
         $user = User::factory()->create();
@@ -102,7 +103,7 @@ class OfficeControllerTest extends TestCase {
     /**
      * @test
      */
-    public function it_should_include_images_tags_and_user() {
+    public function it_includes_images_tags_and_user() {
         $user = User::factory()->create();
         $tag = Tag::factory()->create();
         $office = Office::factory()->for($user)->create();
@@ -121,7 +122,7 @@ class OfficeControllerTest extends TestCase {
     /**
      * @test
      */
-    public function it_should_return_all_the_active_reservations() {
+    public function it_returns_the_number_of_active_reservations() {
         $office = Office::factory()->create();
 
         Reservation::factory()->for($office)->create(['status' => Reservation::STATUS_ACTIVE]);
@@ -135,7 +136,7 @@ class OfficeControllerTest extends TestCase {
     /**
      * @test
      */
-    public function it_should_filter_by_distance_when_coordinates_provided() {
+    public function it_orders_by_distance_when_coordinates_provided() {
         $office1 = Office::factory()->create([
             'lat' => '39.74051727562952',
             'lng' => '-8.770375324893696',
@@ -164,7 +165,7 @@ class OfficeControllerTest extends TestCase {
     /**
      * @test
      */
-    public function it_should_show_the_office() {
+    public function it_shows_the_office() {
         $user = User::factory()->create();
         $tag = Tag::factory()->create();
         $office = Office::factory()->for($user)->create();
@@ -187,7 +188,7 @@ class OfficeControllerTest extends TestCase {
     /**
      * @test
      */
-    public function it_should_create_an_office() {
+    public function it_creates_an_office() {
         Notification::fake();
         
         $admin = User::factory()->create(['is_admin' => true]);
@@ -216,7 +217,7 @@ class OfficeControllerTest extends TestCase {
     /**
      * @test
      */
-    public function it_should_not_create_if_no_scopes_provided() {
+    public function it_doesnt_allow_creating_if_no_scopes_provided() {
         $user = User::factory()->create();
         $token = $user->createToken('test', []);
 
@@ -227,17 +228,33 @@ class OfficeControllerTest extends TestCase {
         $response->assertStatus(Response::HTTP_FORBIDDEN);
     }
 
+
     /**
      * @test
      */
-    public function it_should_update_an_office() {
+    public function it_allows_creating_if_scope_is_provided() {
+        $user = User::factory()->create();
+
+        Sanctum::actingAs($user, ['office.create']);
+
+        $response = $this->postJson('/api/offices');
+
+        $this->assertNotEquals(Response::HTTP_FORBIDDEN, $response->status());
+    }
+
+    /**
+     * @test
+     */
+    public function it_updates_an_office() {
         $user = User::factory()->create();
         $tags = Tag::factory(3)->create();
         $anotherTag = Tag::factory()->create();
         $office = Office::factory()->for($user)->create();
 
         $office->tags()->attach($tags);
+        
         $this->actingAs($user);
+        
         $anotherTag = Tag::factory()->create();
 
         $response = $this->putJson('/api/offices/'.$office->id, [
@@ -255,7 +272,7 @@ class OfficeControllerTest extends TestCase {
     /**
      * @test
      */
-    public function it_should_not_update_office_that_doesnt_belong_to_user() {
+    public function it_doesnt_update_office_that_doesnt_belong_to_user() {
         $user = User::factory()->create();
         $anotherUser = User::factory()->create();
         $office = Office::factory()->for($anotherUser)->create();
@@ -272,7 +289,7 @@ class OfficeControllerTest extends TestCase {
     /**
      * @test
      */
-    public function it_should_mark_the_office_as_pending_if_changed() {
+    public function it_should_mark_the_office_as_pending_if_dirty() {
         $admin = User::factory()->create(['is_admin' => true]);
         
         Notification::fake();
@@ -300,7 +317,7 @@ class OfficeControllerTest extends TestCase {
     /**
      * @test
      */
-    public function it_should_update_the_featured_image() {
+    public function it_updated_the_featured_image() {
         $user = User::factory()->create();
         $office = Office::factory()->for($user)->create();
 
@@ -321,7 +338,7 @@ class OfficeControllerTest extends TestCase {
     /**
      * @test
      */
-    public function it_should_not_update_the_featured_image_that_belongs_to_another_office() {
+    public function it_doesnt_update_the_featured_image_that_belongs_to_another_office() {
         $user = User::factory()->create();
         $office = Office::factory()->for($user)->create();
         $office2 = Office::factory()->for($user)->create();
@@ -343,7 +360,7 @@ class OfficeControllerTest extends TestCase {
     /**
      * @test
      */
-    public function it_should_delete_offices() {
+    public function it_deletes_offices() {
         Storage::put('office_image.jpg', 'empty');
         
         $user = User::factory()->create();
@@ -366,7 +383,7 @@ class OfficeControllerTest extends TestCase {
     /**
      * @test
      */
-    public function it_should_not_delete_offices_that_has_reservations() {
+    public function it_cannot_delete_offices_that_has_reservations() {
         $user = User::factory()->create();
         $office = Office::factory()->for($user)->create();
 

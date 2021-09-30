@@ -1,16 +1,19 @@
 # Left To do
 
+_30 Sept 2021_
+
+- [] Update Laravel to use assertNotSoftDeleted & assertModelMissing
+- [] Update Laravel to use RefreshDBLazily (in tests)
+Done:
+- [x] Switch to Sanctum Guard
+-----------------------------------------------------------------------------------------
 _28 Sept 2021_
-
-- [] Switch to Sanctum Guard => More research needed
-
 Done:
 - [x] Delete all images when deleting an office
 - [x] Default disk should store public images, make switching process easier (in the future)
 - [x] Use keyed implicit binding
 -----------------------------------------------------------------------------------------
 _23 Sept 2021_
-
 Done:
 - [x] Only one photo is required and can be marked as `featured photo`
 - [x] Attach photo to an office and make it possible to be a cover

@@ -18,3 +18,9 @@ Route::delete('/offices/{office}', [\App\Http\Controllers\OfficeController::clas
 // Office Images
 Route::post('/offices/{office}/images', [\App\Http\Controllers\OfficeImageController::class, 'store'])->middleware(['auth:sanctum', 'verified']);
 Route::delete('/offices/{office}/images/{image:id}', [\App\Http\Controllers\OfficeImageController::class, 'delete'])->middleware(['auth:sanctum', 'verified']);
+
+// User Reservations
+Route::get('/reservations', [App\Http\Controllers\UserReservationController::class, 'index'])->middleware(['auth:sanctum', 'verified']);
+
+// Host Reservations
+// Route::get('/host/reservations', [App\Http\Controllers\HostReservationController::class, 'index'])->middleware(['auth:sanctum', 'verified']);
