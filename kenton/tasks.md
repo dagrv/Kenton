@@ -1,6 +1,6 @@
 # Left To do
 
-_30 Sept 2021_
+_30 Sept 2021_  
 Done:
 - [x] Allow filtering by office_id
 - [x] Allow filtering by user_id
@@ -12,13 +12,13 @@ Done:
 - [x] Update Laravel to use LazilyRefreshDatabase (in tests)
 - [x] Paginate
 -----------------------------------------------------------------------------------------
-_28 Sept 2021_
+_28 Sept 2021_  
 Done:
 - [x] Delete all images when deleting an office
 - [x] Default disk should store public images, make switching process easier (in the future)
 - [x] Use keyed implicit binding
 -----------------------------------------------------------------------------------------
-_23 Sept 2021_
+_23 Sept 2021_  
 Done:
 - [x] Only one photo is required and can be marked as `featured photo`
 - [x] Attach photo to an office and make it possible to be a cover
