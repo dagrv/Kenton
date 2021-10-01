@@ -2,9 +2,15 @@
 
 _30 Sept 2021_
 Done:
+- [x] Allow filtering by office_id
+- [x] Allow filtering by user_id
+- [x] Allow filtering date range
+- [x] Allow filtering by status
+- [x] User can only list their own reservation(s)
 - [x] Switch to Sanctum Guard
 - [x] Update Laravel to use assertNotSoftDeleted & assertModelMissing
 - [x] Update Laravel to use LazilyRefreshDatabase (in tests)
+- [x] Paginate
 -----------------------------------------------------------------------------------------
 _28 Sept 2021_
 Done:
@@ -21,10 +27,6 @@ Done:
 - [x] Delete a photo
 -----------------------------------------------------------------------------------------
 
-- [] Filter offices returned
-- [] Pagination offices
-- [] Create office
-- [] Show offices
 - [x] Offices approval status must be pending, approved, never rejected.
 - [x] Store `Office` in DB Transaction
 - [x] Office Update
@@ -44,12 +46,6 @@ Done:
 - [x] Configure resources
 - [x] Token authorization to allow `office.create`
 
-#### Filtering
-- [] User can only list their own reservation(s) on their office
-- [] Allow filtering by office_id
-- [] Allow filtering by user_id
-- [] Allow filtering date range
-- [] Allow filtering by status
 
 #### Delete
 - [] Cannot delete an office that has a reservation

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Office;
 use App\Models\Reservation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
@@ -98,4 +99,51 @@ class UserReservationControllerTest extends TestCase {
             [$reservation1->id, $reservation2->id, $reservation3->id],
             collect($response->json('data'))->pluck('id')->toArray());
     }
+
+    /**
+     * @test
+     */
+    public function it_filters_results_by_status() {
+        $user =  User::factory()->create();
+
+        $reservation = Reservation::factory()->for($user)->create([
+            'status' => Reservation::STATUS_ACTIVE
+        ]);
+
+        $reservation2 = Reservation::factory()->for($user)->cancelled()->create();
+
+        $this->actingAs($user);
+
+        $response = $this->getJson('/api/reservations?'.http_build_query([
+            'status' => Reservation::STATUS_ACTIVE,
+        ]));
+
+        $response
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $reservation->id);
+    }
+
+
+    /**
+     * @test
+     */
+    public function it_filters_results_by_specific_office() {
+        $user =  User::factory()->create();
+        $office = Office::factory()->create();
+
+        $reservation = Reservation::factory()->for($office)->for($user)->create();
+
+        $reservation2 = Reservation::factory()->for($user)->create();
+
+        $this->actingAs($user);
+
+        $response = $this->getJson('/api/reservations?'.http_build_query([
+            'office_id' => $office->id,
+        ]));
+
+        $response
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $reservation->id);
+    }
+
 }

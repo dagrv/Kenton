@@ -6,6 +6,7 @@ use App\Http\Resources\ReservationResource;
 use App\Models\Reservation;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Validation\Rule;
 
 class UserReservationController extends Controller {
     public function index() {
@@ -13,7 +14,15 @@ class UserReservationController extends Controller {
             Response::HTTP_FORBIDDEN
         );
 
-        $reservations = Reservation::query()->where('user_id', auth()->id())
+        validator(request()->all(), [
+            'status' => [Rule::in([Reservation::STATUS_ACTIVE, Reservation::STATUS_CANCELLED])],
+            'office_id' => ['integer'],
+            'from_date' => ['date', 'required_with:to_date'],
+            'to_date' => ['date', 'required_with:from_date', 'after:from_date'],
+        ])->validate();
+
+        $reservations = Reservation::query()
+        ->where('user_id', auth()->id())
         ->when(request('office_id'), 
             fn ($query) => $query->where('office_id', request('office_id'))
         )
