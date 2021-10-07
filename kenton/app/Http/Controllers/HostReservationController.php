@@ -26,21 +26,12 @@ class HostReservationController extends Controller {
             ->whereRelation('office', 'user_id', '=', auth()->id())
             ->when(request('office_id'), 
                 fn ($query) => $query->where('office_id', request('office_id'))
-            )
-            ->when(request('user_id'), 
+            )->when(request('user_id'),
                 fn ($query) => $query->where('user_id', request('user_id'))
-            )
-            ->when(request('status'), 
+            )->when(request('status'), 
                 fn ($query) => $query->where('status', request('status'))
-            )
-            ->when(
-                request('from_date') && request('to_date'),
-                function ($query) {
-                    $query->where(function($query) {
-                        return $query->whereBetween('start_date', [request('from_date'), request('to_date')])
-                        ->orWhereBetween('end_date', [request('from_date'), request('to_date')]);
-                    });
-                }
+            )->when(request('from_date') && request('to_date'),
+                fn($query) => $query->betweenDates(request('from_date'), request('to_date'))
             )
             ->with(['office', 'office.featuredImage'])
             ->paginate(20);
