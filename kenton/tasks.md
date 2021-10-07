@@ -2,11 +2,13 @@
 
 ### Left To do
 
-_5 Oct 2021_ & _6 Oct 2021_
-
+- [] Reserving an hidden or pending office should be forbidden
 - [] Send an email to user and to the host when a reservation is made
 - [] Send an email to user and to the host when it's the start day
 - [] Generate WIFI Password for new reservations (unique & encrypted)
+
+
+_5 Oct 2021_ & _6 Oct 2021_
 Done:
 - [x] Cannot make reservation on their own property
 - [x] Convert filtering reservations by date to Eloquent Scopes
