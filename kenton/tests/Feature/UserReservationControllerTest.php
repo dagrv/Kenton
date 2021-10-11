@@ -20,7 +20,8 @@ class UserReservationControllerTest extends TestCase {
      */
     public function it_lists_reservation_that_belongs_to_a_user() {
         $user =  User::factory()->create();
-        $reservation = Reservation::factory()->for($user)->create();
+
+        [$reservation] = Reservation::factory()->for($user)->count(2)->create();
 
         $image = $reservation->office->images()->create([
             'path' => 'office_image.jpg'
@@ -28,7 +29,6 @@ class UserReservationControllerTest extends TestCase {
 
         $reservation->office()->update(['featured_image_id' => $image->id]);
         
-        Reservation::factory()->for($user)->count(2)->create();
         Reservation::factory()->count(3)->create();
 
         $this->actingAs($user);
@@ -36,7 +36,7 @@ class UserReservationControllerTest extends TestCase {
         $response = $this->getJson('/api/reservations');
         $response
             ->assertJsonStructure(['data', 'meta', 'links'])
-            ->assertJsonCount(3, 'data')
+            ->assertJsonCount(2, 'data')
             ->assertJsonStructure(['data' => ['*' => ['id', 'office']]])
             ->assertJsonPath('data.0.office.featured_image.id', $image->id);
     }
@@ -124,6 +124,7 @@ class UserReservationControllerTest extends TestCase {
      */
     public function it_filters_results_by_specific_office() {
         $user =  User::factory()->create();
+
         $office = Office::factory()->create();
 
         $reservation = Reservation::factory()->for($office)->for($user)->create();
@@ -146,6 +147,7 @@ class UserReservationControllerTest extends TestCase {
      */
     public function it_makes_a_reservation() {
         $user =  User::factory()->create();
+
         $office = Office::factory()->create([
             'price_per_day' => 1_000,
             'monthly_discount' => 10,
@@ -187,6 +189,43 @@ class UserReservationControllerTest extends TestCase {
     }
 
 
+
+    /**
+     * @test
+     */
+    public function it_cannot_make_reservation_on_pending_office_or_hidden() {
+        $user = User::factory()->create();
+
+        $office = Office::factory()->create([
+            'approval_status' => Office::APPROVAL_PENDING
+        ]);
+
+        $office2 = Office::factory()->create([
+            'hidden' => true
+        ]);
+
+        $this->actingAs($user);
+
+        $response = $this->postJson('/api/reservations', [
+            'office_id' => $office->id,
+            'start_date' => now()->addDay(),
+            'end_date' => now()->addDays(41),
+        ]);
+        
+        $response2 = $this->postJson('/api/reservations', [
+            'office_id' => $office2->id,
+            'start_date' => now()->addDay(),
+            'end_date' => now()->addDays(41),
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['office_id' => 'Sorry, you cannot reserve an hidden office']);
+        
+        $response2->assertUnprocessable()
+            ->assertJsonValidationErrors(['office_id' => 'Sorry, you cannot reserve an hidden office']);
+    }
+
+
     /**
      * @test
      */
@@ -225,14 +264,14 @@ class UserReservationControllerTest extends TestCase {
         ]);
 
         $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['start_date' => 'Sorry, reservation dates are too short']);
+            ->assertJsonValidationErrors(['end_date' => 'The end date must be a date after start date.']);
     }
 
 
     /**
      * @test
      */
-    public function it_cannot_reserve_for_two_days() {
+    public function it_makes_reservation_for_2_days() {
         $user = User::factory()->create();
 
         $office = Office::factory()->create();
@@ -252,10 +291,10 @@ class UserReservationControllerTest extends TestCase {
     /**
      * @test
      */
-    public function two_users_cannot_have_the_same_reservation_timeslot() {
+    public function it_cannot_make_reservation_thats_conflicting() {
         $user = User::factory()->create();
 
-        $fromDate = now()->addDay(1)->toDateString();
+        $fromDate = now()->addDays(2)->toDateString();
         $toDate = now()->addDay(15)->toDateString();
 
         $office = Office::factory()->create();

@@ -2,11 +2,18 @@
 
 ### Left To do
 
-- [] Reserving an hidden or pending office should be forbidden
+
+_11 Oct 2021_
+
+
 - [] Send an email to user and to the host when a reservation is made
 - [] Send an email to user and to the host when it's the start day
-- [] Generate WIFI Password for new reservations (unique & encrypted)
+- [] Generate WiFi Password for new reservations (unique & encrypted)
 
+Done:
+- [x] Read request input from validator output (`->validate()`)
+- [x] Reserving an hidden or pending office should be forbidden
+-----------------------------------------------------------------------------------------
 
 _5 Oct 2021_ & _6 Oct 2021_
 Done:

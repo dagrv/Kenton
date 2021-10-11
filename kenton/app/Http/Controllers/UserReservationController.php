@@ -49,11 +49,11 @@ class UserReservationController extends Controller {
             Response::HTTP_FORBIDDEN
         );
 
-        validator(request()->all(), [
+        $data = validator(request()->all(), [
             'office_id' => ['required', 'integer'],
-            'start_date' => ['required', 'date:Y-m-d', 'after:'.now()->addDay()->toDateString()],
+            'start_date' => ['required', 'date:Y-m-d', 'after:today'],
             'end_date' => ['required', 'date:Y-m-d', 'after:start_date'],
-        ]);
+        ])->validate();
 
         try {
             $office = Office::findOrFail(request('office_id'));
@@ -69,9 +69,15 @@ class UserReservationController extends Controller {
             ]);
         }
 
-        $reservation = Cache::lock('reservations_office_'.$office->id, 10)->block(3, function() use ($office) {
-            $numberOfDays = Carbon::parse(request('end_date'))->endOfDay()->diffInDays(
-                Carbon::parse(request('start_date'))->startOfDay()
+        if ($office->user_id == auth()->id()) {
+            throw ValidationException::withMessages([
+                'office_id' => 'Sorry, you cannot reserve your own office'
+            ]);
+        }
+
+        $reservation = Cache::lock('reservations_office_'.$office->id, 10)->block(3, function() use ($data, $office) {
+            $numberOfDays = Carbon::parse($data['end_date'])->endOfDay()->diffInDays(
+                Carbon::parse($data['start_date'])->startOfDay()
             ) + 1;
 
             if ($numberOfDays < 2) {
@@ -80,11 +86,12 @@ class UserReservationController extends Controller {
                 ]);
             }
             
-            if ($office->reservations()->activeBetween(request('start_date'), request('end_date'))->exists()) {
+            if ($office->hidden || $office->approval_status == Office::APPROVAL_PENDING) {
                 throw ValidationException::withMessages([
-                    'office_id' => 'Sorry, you cannot reserve an office with this date range'
+                    'office_id' => 'Sorry, you cannot reserve an hidden office'
                 ]);
             }
+
 
             //Count days to calculate price
             $price = $numberOfDays * $office->price_per_day;
@@ -96,8 +103,8 @@ class UserReservationController extends Controller {
             return Reservation::create([
                 'user_id' => auth()->id(),
                 'office_id' => $office->id,
-                'start_date' => request('start_date'),
-                'end_date' => request('end_date'),
+                'start_date' => $data['start_date'],
+                'end_date' => $data['end_date'],
                 'status' => Reservation::STATUS_ACTIVE,
                 'price' => $price
             ]);
