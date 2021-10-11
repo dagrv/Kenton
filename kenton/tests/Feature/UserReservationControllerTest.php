@@ -250,7 +250,7 @@ class UserReservationControllerTest extends TestCase {
     /**
      * @test
      */
-    public function it_cannot_reserve_less_than_two_days() {
+    public function it_cannot_reserve_less_than_2_days() {
         $user = User::factory()->create();
 
         $office = Office::factory()->create();
@@ -259,13 +259,37 @@ class UserReservationControllerTest extends TestCase {
 
         $response = $this->postJson('/api/reservations', [
             'office_id' => $office->id,
-            'start_date' => now()->addDays(1),
-            'end_date' => now()->addDays(1),
+            'start_date' => now()->addDay(),
+            'end_date' => now()->addDay(),
         ]);
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['end_date' => 'The end date must be a date after start date.']);
     }
+
+
+
+    /**
+     * @test
+     */
+    public function it_cannot_reservation_on_same_day() {
+        $user = User::factory()->create();
+
+        $office = Office::factory()->create();
+
+        $this->actingAs($user);
+
+        $response = $this->postJson('/api/reservations', [
+            'office_id' => $office->id,
+            'start_date' => now()->toDateString(),
+            'end_date' => now()->addDays(3),
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['start_date' => 'The start date must be a date after today.']);
+    }
+
+
 
 
     /**

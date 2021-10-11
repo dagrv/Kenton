@@ -11,6 +11,7 @@ _11 Oct 2021_
 - [] Generate WiFi Password for new reservations (unique & encrypted)
 
 Done:
+- [x] Restrict allow reservation for the same day
 - [x] Read request input from validator output (`->validate()`)
 - [x] Reserving an hidden or pending office should be forbidden
 -----------------------------------------------------------------------------------------
