@@ -6,11 +6,12 @@
 _11 Oct 2021_
 
 
-- [] Send an email to user and to the host when a reservation is made
-- [] Send an email to user and to the host when it's the start day
+
 - [] Generate WiFi Password for new reservations (unique & encrypted)
 
 Done:
+- [x] Send an email to user and to the host when a reservation is made
+- [x] Send an email to user and to the host when it's the start day
 - [x] Restrict allow reservation for the same day
 - [x] Read request input from validator output (`->validate()`)
 - [x] Reserving an hidden or pending office should be forbidden

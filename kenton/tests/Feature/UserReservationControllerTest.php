@@ -5,14 +5,17 @@ namespace Tests\Feature;
 use App\Models\Office;
 use App\Models\Reservation;
 use App\Models\User;
+use App\Notifications\NewHostReservation;
+use App\Notifications\NewUserReservation;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class UserReservationControllerTest extends TestCase {
-    
+
     use LazilyRefreshDatabase;
 
     /**
@@ -28,7 +31,7 @@ class UserReservationControllerTest extends TestCase {
         ]);
 
         $reservation->office()->update(['featured_image_id' => $image->id]);
-        
+
         Reservation::factory()->count(3)->create();
 
         $this->actingAs($user);
@@ -50,7 +53,7 @@ class UserReservationControllerTest extends TestCase {
 
         $fromDate = '2021-03-03';
         $toDate = '2021-04-04';
-        
+
         $reservations = Reservation::factory()->for($user)->createMany([
             [
                 'start_date' => '2021-03-01',
@@ -211,7 +214,7 @@ class UserReservationControllerTest extends TestCase {
             'start_date' => now()->addDay(),
             'end_date' => now()->addDays(41),
         ]);
-        
+
         $response2 = $this->postJson('/api/reservations', [
             'office_id' => $office2->id,
             'start_date' => now()->addDay(),
@@ -220,7 +223,7 @@ class UserReservationControllerTest extends TestCase {
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['office_id' => 'Sorry, you cannot reserve an hidden office']);
-        
+
         $response2->assertUnprocessable()
             ->assertJsonValidationErrors(['office_id' => 'Sorry, you cannot reserve an hidden office']);
     }
@@ -338,6 +341,31 @@ class UserReservationControllerTest extends TestCase {
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['office_id' => 'Sorry, you cannot reserve an office with this date range']);
+    }
+
+
+    /**
+     * @test
+     */
+    public function it_send_notifications_on_new_reservations() {
+        Notification::fake();
+
+        $user = User::factory()->create();
+
+        $office = Office::factory()->create();
+
+        $this->actingAs($user);
+
+        $response = $this->postJson('/api/reservations', [
+            'office_id' => $office->id,
+            'start_date' => now()->addDays(1),
+            'end_date' => now()->addDays(2),
+        ]);
+
+        Notification::assertSentTo($user, NewUserReservation::class);
+        Notification::assertSentTo($office->user, NewHostReservation::class);
+
+        $response->assertCreated();
     }
 
 }
