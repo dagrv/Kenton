@@ -1,23 +1,25 @@
 # Kenton
 
 ### Left To do
-
+- [] Create specific test for ``SendDueReservationsNotifications`` command
 
 _11 Oct 2021_
 
-
-
-- [] Generate WiFi Password for new reservations (unique & encrypted)
-
 Done:
-- [x] Send an email to user and to the host when a reservation is made
-- [x] Send an email to user and to the host when it's the start day
+- [x] Email user and to the host when a reservation is made
+- [x] Email to user and to the host when it's the start day
 - [x] Restrict allow reservation for the same day
 - [x] Read request input from validator output (`->validate()`)
-- [x] Reserving an hidden or pending office should be forbidden
+- [x] Reserving a hidden or pending office should be forbidden
+- [x] Generate WiFi Password for new reservations (unique & encrypted)
+- [x] Cancel Reservation : Must be authenticated & email verified
+- [x] Cancel Reservation : Token must have: ``reservations.cancel``
+- [x] Cancel Reservation : Can only cancel their own reservation
+- [x] Cancel Reservation : Can only cancel an active reservation that has a start_date in the future
 -----------------------------------------------------------------------------------------
 
 _5 Oct 2021_ & _6 Oct 2021_
+
 Done:
 - [x] Cannot make reservation on their own property
 - [x] Convert filtering reservations by date to Eloquent Scopes
@@ -26,6 +28,7 @@ Done:
 - [x] No other reservation should conflict with the same date range
 -----------------------------------------------------------------------------------------
 _30 Sept 2021_  
+
 Done:
 - [x] Allow filtering by office_id
 - [x] Allow filtering by user_id

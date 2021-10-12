@@ -13,6 +13,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -109,12 +110,37 @@ class UserReservationController extends Controller {
                 'start_date' => $data['start_date'],
                 'end_date' => $data['end_date'],
                 'status' => Reservation::STATUS_ACTIVE,
-                'price' => $price
+                'price' => $price,
+                'wifi_password' => Str::random()
             ]);
         });
 
         Notification::send(auth()->user(), new NewUserReservation($reservation));
         Notification::send($office->user, new NewHostReservation($reservation));
+
+        return ReservationResource::make(
+            $reservation->load('office')
+        );
+    }
+
+
+    // Reservation Cancelling
+    public function cancel(Reservation $reservation) {
+        abort_unless(auth()->user()->tokenCan('reservations.cancel'),
+            Response::HTTP_FORBIDDEN
+        );
+
+        if ($reservation->user_id != auth()->id() || $reservation->status != Reservation::STATUS_CANCELLED ||
+            $reservation->start_date < now()->toDateString()) {
+                throw ValidationException::withMessages([
+                    'reservation' => 'Sorry, you cannot cancel this reservation'
+                ]);
+        }
+
+        $reservation->update([
+            'status' => Reservation::STATUS_CANCELLED
+        ]);
+
 
         return ReservationResource::make(
             $reservation->load('office')

@@ -16,7 +16,8 @@ class Reservation extends Model {
         'price' => 'integer',
         'status' => 'integer',
         'start_date' => 'immutable_date',
-        'end_date' => 'immutable_date'
+        'end_date' => 'immutable_date',
+        'wifi_password' => 'encrypted'
     ];
 
     public function user(): BelongsTo {
