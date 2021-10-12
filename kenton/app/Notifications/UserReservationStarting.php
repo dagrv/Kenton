@@ -8,7 +8,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class NewHostReservation extends Notification implements ShouldQueue{
+class UserReservationStarting extends Notification implements ShouldQueue
+{
     use Queueable;
 
     /**
@@ -41,7 +42,7 @@ class NewHostReservation extends Notification implements ShouldQueue{
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    ->line('Congrats ! A new reservation was made on your app.')
+                    ->line('The introduction to the notification.')
                     ->action('Notification Action', url('/'))
                     ->line('Thank you for using our application!');
     }
